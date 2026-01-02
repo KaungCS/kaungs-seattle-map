@@ -2,9 +2,9 @@
 
 A spatial, interactive exploration of personal landmarks in Seattle, featuring a custom "flashlight" lighting engine and physics-based navigation.
 
-[ **🔴 Live Demo** ](REPLACE_WITH_YOUR_VERCEL_LINK_HERE) | [ **📂 Portfolio** ](REPLACE_WITH_YOUR_PORTFOLIO_LINK_HERE)
+[ **🔴 Live Demo** ](https://kaungs-seattle-map.vercel.app/) | [ **📂 Portfolio** ](https://portfolio-woad-eta-83.vercel.app/)
 
-![Project Screenshot](public/screenshot_placeholder.png) 
+![Project Screenshot](![Map Screenshot](image.png)) 
 *(Tip: Replace this line with an actual screenshot or GIF of your map in action)*
 
 ## 💡 About The Project
