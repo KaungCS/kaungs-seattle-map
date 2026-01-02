@@ -4,8 +4,7 @@ A spatial, interactive exploration of personal landmarks in Seattle, featuring a
 
 [ **🔴 Live Demo** ](https://kaungs-seattle-map.vercel.app/) | [ **📂 Portfolio** ](https://portfolio-woad-eta-83.vercel.app/)
 
-![Project Screenshot](![Map Screenshot](image.png)) 
-*(Tip: Replace this line with an actual screenshot or GIF of your map in action)*
+[Project Screenshot](image.png)
 
 ## 💡 About The Project
 
