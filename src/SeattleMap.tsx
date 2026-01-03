@@ -94,20 +94,28 @@ const SeattleMap: React.FC = () => {
     e.preventDefault(); 
     if (viewport.w === 0) return;
 
+    // 1. Calculate the new scale (Simple addition, as you preferred)
     const scaleFactor = -e.deltaY * 0.001; 
-    
-    // Use Ref for calculation to support zooming while coasting
     const currentK = cameraRef.current.k;
+    const proposedScale = currentK + scaleFactor;
+
+    // 2. Get the anchor point (The mouse cursor)
+    // We use the event's clientX/Y directly so it's always accurate
+    const mouseX = e.clientX;
+    const mouseY = e.clientY;
+
     const currentX = cameraRef.current.x;
     const currentY = cameraRef.current.y;
 
-    const proposedScale = currentK + scaleFactor;
-    const centerX = viewport.w / 2;
-    const centerY = viewport.h / 2;
-    const oldWorldX = (centerX - currentX) / currentK;
-    const oldWorldY = (centerY - currentY) / currentK;
-    const proposedX = centerX - (oldWorldX * proposedScale);
-    const proposedY = centerY - (oldWorldY * proposedScale);
+    // 3. The "Zoom to Point" Math
+    // First, find which pixel on the map is currently under the mouse
+    const mapPointUnderMouseX = (mouseX - currentX) / currentK;
+    const mapPointUnderMouseY = (mouseY - currentY) / currentK;
+
+    // Then, calculate where the map needs to move so that SAME pixel 
+    // is still under the mouse at the new scale.
+    const proposedX = mouseX - (mapPointUnderMouseX * proposedScale);
+    const proposedY = mouseY - (mapPointUnderMouseY * proposedScale);
 
     setCamera(constrainCamera({ x: proposedX, y: proposedY, k: proposedScale }));
   };
@@ -119,7 +127,7 @@ const SeattleMap: React.FC = () => {
       
       const spawnX = 775;   // Drumheller Fountain X
       const spawnY = 1370;  // Drumheller Fountain Y
-      const spawnScale = 2.3; // Your default zoom level
+      const spawnScale = isMobile? 1.4 : 2.3; // Your default zoom level
 
       // Calculate camera position to center the spawn point
       const centerX = (viewport.w / 2) - (spawnX * spawnScale);
