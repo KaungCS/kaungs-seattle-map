@@ -3,6 +3,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronDown } from "lucide-react"; 
 import { MAP_CONFIGS, NODES, TAGS, MapId, NodeData } from "./data/mapData";
 
+// --- Make sure to import your images or replace these paths with the actual location ---
+// import flashOnImg from "./assets/flash-on.png";
+// import flashOffImg from "./assets/flash-off.png";
+import flashOnImg from "./assets/flash-on.png"; // Placeholder path
+import flashOffImg from "./assets/flash-off.png"; // Placeholder path
+import startButtonImg from "./assets/start-exploring-button.png"; // Placeholder path
+
 interface CameraState {
   x: number;
   y: number;
@@ -13,6 +20,10 @@ const SeattleMap: React.FC = () => {
   const [currentMapId, setCurrentMapId] = useState<MapId>("uw");
   const [activeNode, setActiveNode] = useState<NodeData | null>(null);
   
+  // --- INTRO STATE ---
+  const [showIntro, setShowIntro] = useState(true);
+  const [isLit, setIsLit] = useState(false); // Controls the specific image (on/off)
+
   // Cursor & Mobile State
   const [cursor, setCursor] = useState({ x: 0, y: 0 });
   const [isPressed, setIsPressed] = useState(false); 
@@ -23,6 +34,7 @@ const SeattleMap: React.FC = () => {
   const cameraRef = useRef<CameraState>({ x: -100, y: -100, k: 1.5 });
 
   const [viewport, setViewport] = useState({ w: 0, h: 0 });
+  const hasSpawnedRef = useRef(false); // To track if initial spawn has occurred
   const containerRef = useRef<HTMLDivElement>(null);
 
   const currentMapConfig = MAP_CONFIGS[currentMapId];
@@ -100,6 +112,27 @@ const SeattleMap: React.FC = () => {
     setCamera(constrainCamera({ x: proposedX, y: proposedY, k: proposedScale }));
   };
 
+  // --- NEW: INITIAL SPAWN LOGIC ---
+  useEffect(() => {
+    // 1. Check if we have a valid viewport and haven't spawned yet
+    if (viewport.w > 0 && viewport.h > 0 && !hasSpawnedRef.current) {
+      
+      const spawnX = 775;   // Drumheller Fountain X
+      const spawnY = 1370;  // Drumheller Fountain Y
+      const spawnScale = 2.3; // Your default zoom level
+
+      // Calculate camera position to center the spawn point
+      const centerX = (viewport.w / 2) - (spawnX * spawnScale);
+      const centerY = (viewport.h / 2) - (spawnY * spawnScale);
+
+      // Apply the position (running it through constraint to ensure it's safe)
+      setCamera(constrainCamera({ x: centerX, y: centerY, k: spawnScale }));
+      
+      // Mark as spawned so we don't reset it again
+      hasSpawnedRef.current = true;
+    }
+  }, [viewport, constrainCamera]);
+  
   useEffect(() => {
     setCamera(prev => constrainCamera(prev));
   }, [currentMapConfig, viewport, constrainCamera]);
@@ -110,6 +143,27 @@ const SeattleMap: React.FC = () => {
     container.addEventListener("wheel", handleWheel, { passive: false });
     return () => container.removeEventListener("wheel", handleWheel);
   }, [camera, constrainCamera]);
+
+  // --- 3. INTRO ANIMATION SEQUENCE ---
+  const triggerIntroSequence = async () => {
+    // Helper to wait ms
+    const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+    // Flicker Sequence
+    setIsLit(true);
+    await wait(200);
+    setIsLit(false);
+    await wait(300);
+
+    // Stable On
+    setIsLit(true);
+    
+    // Hold the "On" state for a moment so user sees the face clearly
+    await wait(1000);
+    
+    // Fade out the whole intro window
+    setShowIntro(false);
+  };
 
   const dragConstraints = {
     left: viewport.w - (currentMapConfig.width * camera.k),
@@ -167,7 +221,7 @@ const SeattleMap: React.FC = () => {
           dragConstraints={dragConstraints}
           dragElastic={0.1} 
           dragMomentum={true}
-          dragTransition={{ power: 0.15, timeConstant: 250 }} // Heavier friction
+          dragTransition={{ power: 0.15, timeConstant: 250 }} 
 
           onUpdate={(latest) => {
             if (typeof latest.x === 'number' && typeof latest.y === 'number') {
@@ -231,6 +285,46 @@ const SeattleMap: React.FC = () => {
           transition: "transform 0.15s ease-out"
         }}
       />
+
+      {/* --- INTRO MODAL --- */}
+      <AnimatePresence>
+        {showIntro && (
+          <motion.div 
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0, transition: { duration: 1, ease: "easeInOut" } }}
+            className="fixed inset-0 z-[200] flex items-center justify-center bg-black cursor-auto"
+          >
+            {/* Image Container */}
+            <div className="relative w-full max-w-md p-6 flex flex-col items-center">
+              
+              <div className="relative">
+                {/* The Character Image */}
+                <img 
+                  src={isLit ? flashOnImg : flashOffImg} 
+                  alt="Intro Character" 
+                  className="w-full max-h-[60vh] object-contain drop-shadow-[0_0_25px_rgba(255,255,255,0.1)] transition-opacity duration-100"
+                />
+                
+                {/* The 'Start' Button positioned 'on' the flashlight (bottom center of image) */}
+                <div className="absolute bottom-[20%] left-1/2 -translate-x-1/2 w-full flex justify-center">
+                   <button
+                    onClick={triggerIntroSequence}
+                    className="group transition-transform hover:scale-105 active:scale-95 focus:outline-none"
+                   >
+                    <img 
+                      src={startButtonImg} 
+                      alt="Start Exploring" 
+                      // Invert color on hover for a cool effect, or just rely on the scale animation
+                      className="h-10 sm:h-11 object-contain opacity-80 group-hover:opacity-100 transition-opacity"
+                    />
+                   </button>
+                </div>
+              </div>
+
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Detail Window */}
       <AnimatePresence>
