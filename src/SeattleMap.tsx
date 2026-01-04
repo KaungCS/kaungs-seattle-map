@@ -256,7 +256,7 @@ const SeattleMap: React.FC = () => {
       </div>
 
       {/* --- ZOOM CONTROLS --- */}
-      <div className="absolute bottom-24 md:bottom-6 right-6 z-50 flex flex-col gap-2">
+      <div className="absolute bottom-40 md:bottom-6 right-6 z-50 flex flex-col gap-2">
         <button
           onClick={() => handleManualZoom("in")}
           className="bg-neutral-900 text-white p-3 rounded-xl shadow-2xl border border-neutral-800 hover:bg-neutral-800 hover:border-neutral-600 active:scale-95 transition-all cursor-pointer"
