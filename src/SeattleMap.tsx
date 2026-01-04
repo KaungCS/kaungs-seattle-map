@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ChevronDown } from "lucide-react"; 
+import { X, ChevronDown, Plus, Minus } from "lucide-react";
 import { MAP_CONFIGS, NODES, TAGS, MapId, NodeData } from "./data/mapData";
 
 // --- Make sure to import your images or replace these paths with the actual location ---
@@ -90,12 +90,13 @@ const SeattleMap: React.FC = () => {
     setActiveNode(node);
   };
 
+  /* --- ZOOM HANDLER (Mouse Wheel) --- does not work well on some touchpads
   const handleWheel = (e: WheelEvent) => {
     e.preventDefault(); 
     if (viewport.w === 0) return;
 
     // 1. Calculate the new scale (Simple addition, as you preferred)
-    const scaleFactor = -e.deltaY * 0.001; 
+    const scaleFactor = -e.deltaY * 0.0005; 
     const currentK = cameraRef.current.k;
     const proposedScale = currentK + scaleFactor;
 
@@ -119,6 +120,7 @@ const SeattleMap: React.FC = () => {
 
     setCamera(constrainCamera({ x: proposedX, y: proposedY, k: proposedScale }));
   };
+  */
 
   // --- NEW: INITIAL SPAWN LOGIC ---
   useEffect(() => {
@@ -145,12 +147,46 @@ const SeattleMap: React.FC = () => {
     setCamera(prev => constrainCamera(prev));
   }, [currentMapConfig, viewport, constrainCamera]);
 
+  /* --- WHEEL EVENT LISTENER ---
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
     container.addEventListener("wheel", handleWheel, { passive: false });
     return () => container.removeEventListener("wheel", handleWheel);
   }, [camera, constrainCamera]);
+  */
+
+  // --- MANUAL ZOOM BUTTON HANDLER ---
+  const handleManualZoom = (direction: "in" | "out") => {
+    if (viewport.w === 0) return;
+
+    // --- FIX: Use cameraRef to get the REAL-TIME position ---
+    // The 'camera' state variable might be stale if you just finished dragging
+    const currentX = cameraRef.current.x;
+    const currentY = cameraRef.current.y;
+    const currentK = cameraRef.current.k;
+
+    // 1. Determine new scale
+    const ZOOM_STEP = 0.5; // Adjust as you like (0.1 is fine too)
+    const newK = direction === "in" 
+      ? currentK + ZOOM_STEP 
+      : currentK - ZOOM_STEP;
+
+    // 2. We want to zoom towards the CENTER of the viewport
+    const centerX = viewport.w / 2;
+    const centerY = viewport.h / 2;
+
+    // 3. Calculate the point on the map currently under the center
+    // We use currentX/Y (from the Ref) here so it doesn't snap back
+    const mapPointUnderCenterX = (centerX - currentX) / currentK;
+    const mapPointUnderCenterY = (centerY - currentY) / currentK;
+
+    // 4. Calculate new camera position to keep that point centered
+    const proposedX = centerX - (mapPointUnderCenterX * newK);
+    const proposedY = centerY - (mapPointUnderCenterY * newK);
+
+    setCamera(constrainCamera({ x: proposedX, y: proposedY, k: newK }));
+  };
 
   // --- 3. INTRO ANIMATION SEQUENCE ---
   const triggerIntroSequence = async () => {
@@ -217,6 +253,24 @@ const SeattleMap: React.FC = () => {
           </select>
           <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none" size={18} />
         </div>
+      </div>
+
+      {/* --- ZOOM CONTROLS --- */}
+      <div className="absolute bottom-6 right-6 z-50 flex flex-col gap-2">
+        <button
+          onClick={() => handleManualZoom("in")}
+          className="bg-neutral-900 text-white p-3 rounded-xl shadow-2xl border border-neutral-800 hover:bg-neutral-800 hover:border-neutral-600 active:scale-95 transition-all cursor-pointer"
+          aria-label="Zoom In"
+        >
+          <Plus size={20} />
+        </button>
+        <button
+          onClick={() => handleManualZoom("out")}
+          className="bg-neutral-900 text-white p-3 rounded-xl shadow-2xl border border-neutral-800 hover:bg-neutral-800 hover:border-neutral-600 active:scale-95 transition-all cursor-pointer"
+          aria-label="Zoom Out"
+        >
+          <Minus size={20} />
+        </button>
       </div>
 
       <div ref={containerRef} className="w-full h-full">
