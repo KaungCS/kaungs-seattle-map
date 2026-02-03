@@ -1,5 +1,8 @@
 // src/data/mapData.ts
 import uwMapImage from '../assets/uw-campus-map.png';
+import oliver1 from '../map_pictures/oliver1.jpg';
+import spratlan1 from '../map_pictures/spratlan1.jpg';
+import denny1 from '../map_pictures/denny1.jpg';
 
 export type TagCategory = 'food' | 'study' | 'memory' | 'vibes';
 export type MapId = 'uw' | 'udistrict' | 'seattle';
@@ -71,8 +74,18 @@ export const NODES: NodeData[] = [
     x: 710,
     y: 1015,
     title: "Suzzallo Library",
-    images: ["/placeholder/suz1.jpg"],
+    images: ["/placeholder/suzzallo1.jpg"],
     description: "Late night study sessions. The Harry Potter room always smells like old paper.",
+    tags: ["study", "memory"],
+  },
+  {
+    id: "spratlan",
+    mapId: "uw",
+    x: 1070,
+    y: 310,
+    title: "Spratlan Hall",
+    images: [spratlan1],
+    description: "Frost bite tastes amazing after a long day of classes in the winter.",
     tags: ["study", "memory"],
   },
   {
@@ -81,7 +94,7 @@ export const NODES: NodeData[] = [
     x: 1150,
     y: 340,
     title: "Oliver Hall",
-    images: ["/placeholder/oliver1.jpg"],
+    images: [oliver1],
     description: "Stayed there my first year. Very close to the center table and district market.",
     tags: ["memory"],
   },
@@ -144,5 +157,15 @@ export const NODES: NodeData[] = [
     images: ["/placeholder/hub1.jpg"],
     description: "Quite a lot of events happen here. The food court is decent too.",
     tags: ["food"],
+  },
+  {
+    id: "denny",
+    mapId: "uw",
+    x: 650,
+    y: 590,
+    title: "Denny Hall",
+    images: [denny1],
+    description: "Very interesting building with a big analog clock. Only had education classes here.",
+    tags: ["vibes","memory"],
   },
 ];
